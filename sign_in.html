@@ -94,7 +94,7 @@
             //用ajax发送请求
             $.post('/sign_in', hash)
                 .then((response) => {
-                    //跳转主页
+                    //成功则跳转主页
                     window.location.href = '/'
                 }, (request) => {
                     //不成功的提示

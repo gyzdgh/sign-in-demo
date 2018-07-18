@@ -24,7 +24,7 @@ var server = http.createServer(function (request, response) {
     if (path === '/') {
         //查找文件
         let string = fs.readFileSync('./index.html', 'utf8')
-        //设置Cookie
+        //设置Cookie(请求头)
         let cookies = request.headers.cookie.split('; ') // ['email=1@', 'a=1', 'b=2']
         let hash = {}
         for (let i = 0; i < cookies.length; i++) {
@@ -36,6 +36,7 @@ var server = http.createServer(function (request, response) {
         let email = hash.sign_in_email
         let users = fs.readFileSync('./db/users', 'utf8')
         users = JSON.parse(users)
+        //遍历看用户是否登陆
         let foundUser
         for (let i = 0; i < users.length; i++) {
             if (users[i].email === email) {
@@ -43,11 +44,11 @@ var server = http.createServer(function (request, response) {
                 break
             }
         }
-        console.log(foundUser)
+        //用户是否登陆做的事情
         if (foundUser) {
             string = string.replace('__password__', foundUser.password)
         } else {
-            string = string.replace('__password__', '不知道')
+            string = string.replace('__password__', '未登陆')
         }
         response.statusCode = 200
         response.setHeader('Content-Type', 'text/html;charset=utf-8')
@@ -84,11 +85,13 @@ var server = http.createServer(function (request, response) {
                 response.write('password not match')
             } else {
                 var users = fs.readFileSync('./db/users', 'utf8')
+                //对数据库做解析判断
                 try {
-                    users = JSON.parse(users) // []
+                    users = JSON.parse(users)
                 } catch (exception) {
                     users = []
                 }
+                //遍历users看是否有重复
                 let inUse = false
                 for (let i = 0; i < users.length; i++) {
                     let user = users[i]
@@ -101,8 +104,11 @@ var server = http.createServer(function (request, response) {
                     response.statusCode = 400
                     response.write('email in use')
                 } else {
+                    //往users中push数据
                     users.push({ email: email, password: password })
+                    //把对象变成字符串
                     var usersString = JSON.stringify(users)
+                    //读这个文件
                     fs.writeFileSync('./db/users', usersString)
                     response.statusCode = 200
                 }
@@ -124,6 +130,7 @@ var server = http.createServer(function (request, response) {
                 let parts = string.split('=') // ['email', '1']
                 let key = parts[0]
                 let value = parts[1]
+                //转换字符编码@
                 hash[key] = decodeURIComponent(value) // hash['email'] = '1'
             })
             let { email, password } = hash
@@ -133,6 +140,7 @@ var server = http.createServer(function (request, response) {
             } catch (exception) {
                 users = []
             }
+            //遍历看是否找到用户输入的信息
             let found
             for (let i = 0; i < users.length; i++) {
                 if (users[i].email === email && users[i].password === password) {
@@ -141,6 +149,7 @@ var server = http.createServer(function (request, response) {
                 }
             }
             if (found) {
+                //设置请求头
                 response.setHeader('Set-Cookie', `sign_in_email=${email}`)
                 response.statusCode = 200
             } else {
