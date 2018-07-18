@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            border: 1px solid red;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .form-wrapper {
+            padding: 20px;
+            border: 1px solid #ddd;
+            min-width: 350px;
+        }
+
+        .form-wrapper .row {
+            margin: 10px 0;
+        }
+
+        .form-wrapper .row>label {
+            display: inline-block;
+            min-width: 4em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-wrapper">
+        <h1>登录</h1>
+        <form id="signInForm">
+            <div class="row">
+                <label>邮箱</label>
+                <input type="text" name="email">
+                <span class="error"></span>
+            </div>
+            <div class="row">
+                <label>密码</label>
+                <input type="password" name="password">
+                <span class="error"></span>
+            </div>
+            <div class="row">
+                <input type="submit" value="登录">
+            </div>
+        </form>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        //找到form表单
+        let $form = $('#signInForm')
+        //监听form表单的submit事件
+        $form.on('submit', (e) => {
+            e.preventDefault()
+            //声明一个哈希来存数据
+            let hash = {}
+            //声明需要的数据
+            let need = ['email', 'password']
+            need.forEach((name) => {
+                //取到数据的值
+                let value = $form.find(`[name=${name}]`).val()
+                hash[name] = value
+            })
+            //将错误提示的内容设置为空
+            $form.find('.error').each((index, span) => {
+                $(span).text('')
+            })
+            //设置邮箱内容为空的函数
+            if (hash['email'] === '') {
+                $form.find('[name="email"]').siblings('.error')
+                    .text('你是不是没填邮箱')
+                return
+            }
+            //设置密码内容为空的函数
+            if (hash['password'] === '') {
+                $form.find('[name="password"]').siblings('.error')
+                    .text('你是不是没填密码')
+                return
+            }
+            //用ajax发送请求
+            $.post('/sign_in', hash)
+                .then((response) => {
+                    //跳转主页
+                    window.location.href = '/'
+                }, (request) => {
+                    //不成功的提示
+                    alert('邮箱与密码不匹配')
+                })
+        })
+    </script>
+</body>
+
+</html>
